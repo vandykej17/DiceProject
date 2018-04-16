@@ -21,6 +21,7 @@
  */
 package osu.cse1223;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -163,76 +164,65 @@ public class Project10 {
     //  EXTRA CREDIT: Include in your scoring a Straight, which is 5 numbers in sequence
     //		[1,2,3,4,5] or [2,3,4,5,6] or [3,4,5,6,7] etc..
     public static String getResult(int[] dice) {
-        int index = 0;
-        int largest = 0;
-        int secondLargest = 0;
-        int first = 0;
-        int one = 0;
-        String result = "";
-
-//		Finds max number of dice
-        while (index < dice.length) {
-            if (dice[index] > largest) {
-                largest = dice[index];
-            }
-            index++;
+//      Convert array to list. Lists are easier.
+        ArrayList<Integer> listOfDice = new ArrayList<>(dice.length);
+        for (int di : dice) {
+            listOfDice.add(di);
         }
 
-        index = 0;
-//		How many have only 1 value
-        while (index < dice.length) {
-            if (dice[index] == 1) {
-                one++;
-            }
-            index++;
-        }
-
-        index = 0;
-        while (index < dice.length) {
-            if (dice[index] > secondLargest && dice[index] < largest) {
-                secondLargest = dice[index];
-            }
-            index++;
-        }
-
-        index = 0;
-        while (dice[index] < 1) {
-            first = index;
-            index++;
-        }
-
-        index = 0;
-        int indexHightoLow = dice.length - 1;
-        while (dice[indexHightoLow] < 1) {
-            indexHightoLow--;
-        }
-
-        boolean straight = false;
-        if (dice[first] == 1 && dice[first + 1] == 1 && dice[first + 2] == 1 && dice[first + 3] == 1 && dice[first + 4] == 1) {
-            straight = true;
-        }
-
-        if (largest == 5) {
-            result = "Five of a kind";
-        } else if (largest == 4) {
-            result = "Four of a kind";
-        } else if (largest == 3 && secondLargest == 2) {
-            result = "Full House";
-        } else if (largest == 3) {
-            result = "Three of a kind";
-        } else if (straight) {
-            result = "Straight";
-        } else if (largest == 2 && one == 1) {
-            result = "Two Pair";
-        } else if (largest == 2) {
-            result = "One Pair";
+        if (isFiveOfAKind(listOfDice)) {
+            return "Five of a kind";
+        } else if (isFourOfAKind(listOfDice)) {
+            return "Four of a kind";
+        } else if (hasThreeOfAKind(listOfDice) && hasPair(listOfDice)) {
+            return "Full House";
+        } else if (hasThreeOfAKind(listOfDice)) {
+            return "Three of a kind";
+        } else if (isStraight(listOfDice)) {
+            return "Straight";
+        } else if (hasTwoPair(listOfDice)) {
+            return "Two Pair";
+        } else if (hasPair(listOfDice)) {
+            return "One Pair";
         } else {
-            result = "Highest card " + indexHightoLow;
+            return "Highest card " + (listOfDice.lastIndexOf(1) + 1);
         }
+    }
 
+    public static boolean isFiveOfAKind(ArrayList<Integer> counts) {
+        return counts.contains(5);
+    }
 
-        return result;
+    public static boolean isFourOfAKind(ArrayList<Integer> counts) {
+        return counts.contains(4);
+    }
 
+    public static boolean hasThreeOfAKind(ArrayList<Integer> counts) {
+        return counts.contains(3);
+    }
+
+    public static boolean hasPair(ArrayList<Integer> counts) {
+        return counts.contains(2);
+    }
+
+    public static boolean hasTwoPair(ArrayList<Integer> counts) {
+//      Does it have one pair?
+        if (hasPair(counts)) {
+            ArrayList removeOnePair = (ArrayList) counts.clone();
+            removeOnePair.remove(Integer.valueOf(2));
+//          After removing another pair, do we have another?
+            return hasPair(removeOnePair);
+        }
+        return false;
+    }
+
+    public static boolean isStraight(ArrayList<Integer> counts) {
+        int first = counts.indexOf(1);
+//      Our first dice needs to be the fifth dice or before, or we won't have 5 dice left to check: [0,0,0,0,0,1,1,1,1,1]
+        if (first > 0 && first <= 5) {
+            return counts.get(first + 1) == 1 && counts.get(first + 2) == 1 && counts.get(first + 3) == 1 && counts.get(first + 4) == 1;
+        }
+        return false;
     }
 
     // Given an array of integers as input, return back an array with the counts of the
